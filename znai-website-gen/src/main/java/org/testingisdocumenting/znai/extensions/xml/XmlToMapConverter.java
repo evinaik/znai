@@ -1,4 +1,5 @@
 /*
+ * Copyright 2020 znai maintainers
  * Copyright 2019 TWO SIGMA OPEN SOURCE, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,22 +17,29 @@
 
 package org.testingisdocumenting.znai.extensions.xml;
 
+import com.sun.jmx.remote.internal.ArrayQueue;
 import org.testingisdocumenting.znai.utils.XmlUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
 
 import java.util.*;
 
-public class XmlToMapRepresentationConverter extends DefaultHandler {
+public class XmlToMapConverter extends DefaultHandler {
     private final List<Map<String, Object>> result;
     private final Deque<List<Map<String, Object>>> currentStack;
+    private final Set<String> missingPaths;
+    private final Deque<String> currentPathParts;
     private StringBuilder accumulatedText;
 
-    public static Map<String, ?> convert(String xmlContent) {
-        return new XmlToMapRepresentationConverter().convertXml(xmlContent);
+    public static XmlToMapResult convertAndValidatePaths(String xmlContent, Collection<String> paths) {
+        XmlToMapConverter converter = new XmlToMapConverter(paths);
+        return new XmlToMapResult(converter.convertXml(xmlContent), converter.missingPaths);
     }
 
-    private XmlToMapRepresentationConverter() {
+    private XmlToMapConverter(Collection<String> paths) {
+        this.missingPaths = new HashSet<>(paths);
+
+        currentPathParts = new ArrayDeque<>();
         currentStack = new ArrayDeque<>();
         result = new ArrayList<>();
 
@@ -48,6 +56,10 @@ public class XmlToMapRepresentationConverter extends DefaultHandler {
     public void startElement(String uri, String localName, String qName, Attributes attributes) {
         Map<String, Object> asMap = new LinkedHashMap<>();
 
+        currentPathParts.add(qName);
+        String renderedPath = String.join(".", currentPathParts);
+
+        System.out.println(renderedPath);
         List<Map<String, Object>> children = new ArrayList<>();
         asMap.put("tagName", qName);
         asMap.put("attributes", parseAttributes(attributes));
@@ -76,7 +88,9 @@ public class XmlToMapRepresentationConverter extends DefaultHandler {
             currentStack.peekLast().add(createTextNode(accumulatedText.toString().trim()));
         }
 
-        currentStack.removeLast();
+        currentPathParts.removeLast();
+        List<Map<String, Object>> top = currentStack.removeLast();
+        System.out.println(top);
         accumulatedText = new StringBuilder();
     }
 

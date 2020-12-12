@@ -24,6 +24,7 @@ import org.testingisdocumenting.znai.extensions.include.IncludePlugin;
 import org.testingisdocumenting.znai.parser.ParserHandler;
 
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Stream;
 
@@ -46,7 +47,7 @@ public class XmlIncludePlugin implements IncludePlugin {
         String xml = componentsRegistry.resourceResolver().textContent(fileName);
 
         Map<String, Object> props = pluginParams.getOpts().toMap();
-        props.put("xmlAsJson", XmlToMapRepresentationConverter.convert(xml));
+        props.put("xmlAsJson", XmlToMapConverter.convertAndValidatePaths(xml, Arrays.asList()));
         props.put("paths", pluginParams.getOpts().getList("paths"));
 
         return PluginResult.docElement("Xml", props);

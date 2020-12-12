@@ -187,7 +187,15 @@ class FileIncludePluginTest {
     void "should validate lines from a highlight text file"() {
         code {
             resultingProps("script.groovy", "{highlightPath: 'missing-highlight.txt'}")
-        } should throwException(~/highlight text <def g> is not found/)
+        } should throwException("highlight text <def g> is not found\n" +
+                "check: script.groovy\n" +
+                "import e.d.g.AnotherName\n" +
+                "import a.b.c.ClassName\n" +
+                "\n" +
+                "class HelloWorld {\n" +
+                "    def a\n" +
+                "    int b\n" +
+                "}")
     }
 
     private static String resultingSnippet(String fileName, String value) {

@@ -15,9 +15,8 @@
   -->
 
 <root>
-    <a>text 1</a>
-    <a>text 2</a>
-    <b>text 3</b>
-    <c>text 4</c>
-    <c>text 5</c>
+    <a>
+        <b>10</b>
+        <b>20</b>
+    </a>
 </root>
